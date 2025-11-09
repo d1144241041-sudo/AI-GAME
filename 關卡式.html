@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>學習證書</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .certificate-container {
+            width: 800px;
+            padding: 50px;
+            background-color: #ffffff;
+            border: 10px solid #d4af37; /* 加框線美化 */
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 36px;
+        }
+        h2 {
+            color: #d9534f;
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        .congrats-text {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .name-input-area {
+            margin: 30px 0;
+            font-size: 20px;
+        }
+        #student-name {
+            font-size: 20px;
+            padding: 5px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            text-align: center;
+        }
+        #student-name:focus {
+            outline: none;
+            border-bottom: 2px solid #d9534f;
+        }
+        /* 僅在列印時顯示的姓名 */
+        #print-name {
+            display: none;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+        .footer-text {
+            font-size: 16px;
+            color: #555;
+            margin-top: 30px;
+        }
+        .teacher-info {
+            font-size: 18px;
+            margin-top: 50px;
+            text-align: right;
+        }
+        .download-button {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .download-button:hover {
+            background-color: #4cae4c;
+        }
+
+        /* 列印樣式 */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .name-input-area {
+                display: none; /* 列印時隱藏輸入框 */
+            }
+            #print-name {
+                display: block; /* 列印時顯示姓名 */
+            }
+            .download-button {
+                display: none; /* 列印時隱藏按鈕 */
+            }
+            .certificate-container {
+                box-shadow: none;
+                border: 10px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="certificate-container">
+        <h1>學習證書</h1>
+        <p class="congrats-text">恭喜你完成SDGs性別平權挑戰!</p>
+        
+        <h2>SDGs 性別平權小達人</h2>
+
+        <div class="name-input-area">
+            學員姓名：<input type="text" id="student-name" placeholder="請在此輸入您的姓名">
+        </div>
+        
+        <div id="print-name"></div>
+
+        <p class="footer-text">感謝你在性別平權議題上的努力與學習!<br>讓我們一起實現更公平的社會。</p>
+
+        <div class="teacher-info">
+            
+        </div>
+    </div>
+
+    <button class="download-button" onclick="downloadCertificate()">下載證書</button>
+
+    <script>
+        function downloadCertificate() {
+            const name = document.getElementById('student-name').value;
+            if (name.trim() === "") {
+                alert("請先輸入您的姓名！");
+                return;
+            }
+            
+            // 將姓名填入僅供列印的欄位
+            const printNameDiv = document.getElementById('print-name');
+            printNameDiv.innerText = `學員姓名：${name}`;
+            
+            // 呼叫列印功能
+            window.print();
+        }
+    </script>
+
+</body>
+</html>

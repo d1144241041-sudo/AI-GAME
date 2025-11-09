@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英雄的試煉 - 常識村莊</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            /* 新的背景圖 */
+            background-image: url('images/village-fantasy-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6); /* 深色主題 */
+            color: white;
+        }
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        /* 新的點擊物件 */
+        .treasure-chest {
+            position: absolute;
+            cursor: pointer;
+            width: 80px; /* 寶箱大小，可調整 */
+            height: 80px;
+            transition: transform 0.2s;
+        }
+        .treasure-chest:hover {
+            transform: scale(1.1);
+        }
+        /* 彈窗 Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            color: #333;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        /* 開始彈窗 */
+        #start-modal {
+            display: flex; /* 預設顯示開始畫面 */
+        }
+        #start-instructions {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        #start-button {
+            background-color: #a0522d; /* 棕色 */
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        /* 問題彈窗 */
+        #question-modal .options button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* 結果彈窗 */
+        #result-modal .modal-content {
+            font-size: 24px;
+        }
+        #result-modal button {
+            background-color: #a0522d;
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div id="title">英雄的試煉 - 常識村莊</div>
+        <div id="score">答對題數: 0</div>
+    </div>
+
+    <div id="game-container">
+        </div>
+
+    <div id="start-modal" class="modal">
+        <div class="modal-content">
+            <h2>歡迎來到常識村莊！</h2>
+            <div id="start-instructions">
+                <p>☆ 村莊裡藏了10個常識寶箱，請點擊它們。</p>
+                <p>☆ 每個寶箱都有一道常識題，答對才能獲得智慧的證明。</p>
+                <p>☆ 答對8題(含)以上，村長才會認可你，讓你前往下一關「魔法森林」。</p>
+                <p>☆ 答對題數不足8題，將會重置試煉。</p>
+            </div>
+            <button id="start-button">開始試煉</button>
+        </div>
+    </div>
+
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="question-text"></h3>
+            <div id="question-options"></div>
+        </div>
+    </div>
+
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <p id="result-message"></p>
+            <button id="result-button"></button>
+        </div>
+    </div>
+
+    <audio id="bgm" src="music/fantasy-theme.mp3" loop></audio>
+
+    <script>
+        // ========== 這裡更新為簡單的常識問答 ==========
+        const questions = [
+            { q: "什麼動物會游泳，有鰓沒有腳？", opts: ["魚", "狗", "鳥"], a: 0 },
+            { q: "什麼東西在天上，白天很亮，晚上不見？", opts: ["月亮", "星星", "太陽"], a: 2 },
+            { q: "什麼東西有指針和數字，會告訴你時間？", opts: ["溫度計", "時鐘", "體重計"], a: 1 },
+            { q: "什麼交通工具在路上跑，有四個輪子？", opts: ["飛機", "船", "汽車"], a: 2 },
+            { q: "什麼東西是綠色的，會跳，呱呱叫？", opts: ["青蛙", "鴨子", "蚱蜢"], a: 0 },
+            { q: "什麼東西有牙齒，卻不能吃東西，用來整理頭髮？", opts: ["叉子", "梳子", "湯匙"], a: 1 },
+            { q: "什麼東西會飛，在天上，但不是鳥？", opts: ["風箏", "蝴蝶", "飛機"], a: 2 },
+            { q: "什麼水果是紅色的，夏天很多汁，裡面是黑籽？", opts: ["香蕉", "西瓜", "橘子"], a: 1 },
+            { q: "什麼東西會流動，但沒有腳？", opts: ["石頭", "樹", "河流"], a: 2 },
+            { q: "什麼東西是白色的，冷冷的，冬天會從天上掉下來？", opts: ["雨", "雪", "棉花"], a: 1 }
+        ];
+        // =============================================
+
+        let score = 0;
+        let questionsAnswered = 0;
+        let chestElements = [];
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const startModal = document.getElementById('start-modal');
+        const questionModal = document.getElementById('question-modal');
+        const resultModal = document.getElementById('result-modal');
+        const bgm = document.getElementById('bgm');
+
+        document.getElementById('start-button').onclick = startGame;
+
+        function startGame() {
+            startModal.style.display = 'none';
+            bgm.play().catch(e => console.log("瀏覽器限制自動播放"));
+            createChests();
+        }
+
+        function createChests() {
+            const numChests = 10;
+            const gameHeight = window.innerHeight;
+            const gameWidth = window.innerWidth;
+
+            for (let i = 0; i < numChests; i++) {
+                const chest = document.createElement('img');
+                chest.src = 'images/treasure-chest.png'; // 寶箱圖示
+                chest.className = 'treasure-chest';
+                
+                // 随機位置 (隨機放大縮小)
+                const x = Math.random() * (gameWidth - 100); 
+                const y = Math.random() * (gameHeight - 100); 
+                chest.style.left = `${x}px`;
+                chest.style.top = `${y}px`;
+
+                const scale = 1 + (Math.random() * 0.5 - 0.25); // 0.75 ~ 1.25 倍
+                chest.style.transform = `scale(${scale})`;
+
+                chest.dataset.index = i;
+                chest.onclick = () => showQuestion(chest, i);
+                
+                gameContainer.appendChild(chest);
+                chestElements.push(chest);
+            }
+        }
+
+        function showQuestion(chest, index) {
+            if (chest.style.visibility === 'hidden') return;
+
+            const q = questions[index];
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsContainer = document.getElementById('question-options');
+            optionsContainer.innerHTML = '';
+            
+            q.opts.forEach((opt, i) => {
+                const button = document.createElement('button');
+                button.innerText = opt;
+                button.onclick = () => submitAnswer(i === q.a, chest);
+                optionsContainer.appendChild(button);
+            });
+
+            questionModal.style.display = 'flex';
+        }
+
+        function submitAnswer(isCorrect, chest) {
+            questionModal.style.display = 'none';
+            chest.style.visibility = 'hidden'; // 答過的寶箱消失
+            questionsAnswered++;
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.innerText = `答對題數: ${score}`;
+            }
+
+            // 檢查是否過關 (答對8題)
+            if (score >= 8) {
+                showResult(true);
+            } 
+            // 檢查是否失敗 (10題全答完，分數仍<8)
+            else if (questionsAnswered === 10 && score < 8) {
+                showResult(false);
+            }
+        }
+
+        function showResult(isWin) {
+            const message = document.getElementById('result-message');
+            const button = document.getElementById('result-button');
+
+            if (isWin) {
+                message.innerText = '恭喜你，真正的常識勇者！請前往魔法森林！';
+                button.innerText = '前往下一關';
+                button.onclick = () => { window.location.href = 'level2.html'; }; // 連結到第二關
+            } else {
+                message.innerText = '常識不足...村長請你再來一次！';
+                button.innerText = '重新試煉';
+                button.onclick = () => { window.location.reload(); }; // 重新載入
+            }
+            resultModal.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
